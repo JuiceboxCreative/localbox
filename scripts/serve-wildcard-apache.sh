@@ -12,7 +12,7 @@ fi
 export DEBIAN_FRONTEND=noninteractive
 sudo service nginx stop
 apt-get update
-apt-get install -y apache2 libapache2-mod-php"$5"
+apt-get install -y apache2
 sed -i "s/www-data/vagrant/" /etc/apache2/envvars
 
 block="<VirtualHost *:$3>
@@ -27,8 +27,8 @@ block="<VirtualHost *:$3>
 
     ServerAdmin webmaster@localhost
     ServerName localbox
-    ServerAlias $1
-    VirtualDocumentRoot $2
+    ServerAlias *.$1
+    VirtualDocumentRoot $2/%-3/www
     $paramsTXT
 
     <Directory $2>
@@ -51,6 +51,16 @@ block="<VirtualHost *:$3>
     # following line enables the CGI configuration for this host only
     # after it has been globally disabled with "a2disconf".
     #Include conf-available/serve-cgi-bin.conf
+
+    <Directory /usr/lib/cgi-bin>
+        Require all granted
+    </Directory>
+    <IfModule mod_fastcgi.c>
+            AddHandler php70-fcgi .php
+            Action php70-fcgi /php70-fcgi virtual
+            Alias /php70-fcgi /usr/lib/cgi-bin/php70-fcgi
+            FastCgiExternalServer /usr/lib/cgi-bin/php70-fcgi -socket /var/run/php/php7.0-fpm.sock -pass-header Authorization
+    </IfModule>
 </VirtualHost>
 
 # vim: syntax=apache ts=4 sw=4 sts=4 sr noet
@@ -64,8 +74,8 @@ blockssl="<IfModule mod_ssl.c>
 
         ServerAdmin webmaster@localhost
         ServerName localbox
-        ServerAlias $1
-        VirtualDocumentRoot $2
+        ServerAlias *.$1
+        VirtualDocumentRoot $2/%-3/www
         $paramsTXT
 
         <Directory $2>
@@ -149,6 +159,14 @@ blockssl="<IfModule mod_ssl.c>
         # MSIE 7 and newer should be able to use keepalive
         BrowserMatch \"MSIE [17-9]\" ssl-unclean-shutdown
 
+        <Directory /usr/lib/cgi-bin>
+            Require all granted
+        </Directory>
+        <IfModule mod_fastcgi.c>
+                AddHandler php70-fcgi .php
+                Action php70-fcgi /php70-fcgi virtual
+                Alias /php70-fcgi /usr/lib/cgi-bin/php70-fcgi
+        </IfModule>
     </VirtualHost>
 </IfModule>
 
