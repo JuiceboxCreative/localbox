@@ -9,10 +9,12 @@ if [ -n "$6" ]; then
     done
 fi
 
+phpnodot=${5/.}
+
 export DEBIAN_FRONTEND=noninteractive
 sudo service nginx stop
 apt-get update
-apt-get install -y apache2 libapache2-mod-php"$5"
+apt-get install -y apache2
 sed -i "s/www-data/vagrant/" /etc/apache2/envvars
 
 block="<VirtualHost *:$3>
@@ -27,7 +29,6 @@ block="<VirtualHost *:$3>
 
     ServerAdmin webmaster@localhost
     ServerName $1
-    ServerAlias www.$1
     DocumentRoot $2
     $paramsTXT
 
@@ -51,13 +52,23 @@ block="<VirtualHost *:$3>
     # following line enables the CGI configuration for this host only
     # after it has been globally disabled with "a2disconf".
     #Include conf-available/serve-cgi-bin.conf
+
+    <Directory /usr/lib/cgi-bin>
+        Require all granted
+    </Directory>
+    <IfModule mod_fastcgi.c>
+            AddHandler php$phpnodot-fcgi .php
+            Action php$phpnodot-fcgi /php$phpnodot-fcgi virtual
+            Alias /php$phpnodot-fcgi /usr/lib/cgi-bin/php$phpnodot-fcgi
+            FastCgiExternalServer /usr/lib/cgi-bin/php$phpnodot-fcgi -socket /var/run/php/php$5-fpm.sock -pass-header Authorization
+    </IfModule>
 </VirtualHost>
 
 # vim: syntax=apache ts=4 sw=4 sts=4 sr noet
 "
 
-echo "$block" > "/etc/apache2/sites-available/$1.conf"
-ln -fs "/etc/apache2/sites-available/$1.conf" "/etc/apache2/sites-enabled/$1.conf"
+echo "$block" > "/etc/apache2/sites-available/000-$1.conf"
+ln -fs "/etc/apache2/sites-available/000-$1.conf" "/etc/apache2/sites-enabled/000-$1.conf"
 
 blockssl="<IfModule mod_ssl.c>
     <VirtualHost *:$4>
@@ -149,14 +160,22 @@ blockssl="<IfModule mod_ssl.c>
         # MSIE 7 and newer should be able to use keepalive
         BrowserMatch \"MSIE [17-9]\" ssl-unclean-shutdown
 
+        <Directory /usr/lib/cgi-bin>
+            Require all granted
+        </Directory>
+        <IfModule mod_fastcgi.c>
+                AddHandler php$phpnodot-fcgi .php
+                Action php$phpnodot-fcgi /php$phpnodot-fcgi virtual
+                Alias /php$phpnodot-fcgi /usr/lib/cgi-bin/php$phpnodot-fcgi
+        </IfModule>
     </VirtualHost>
 </IfModule>
 
 # vim: syntax=apache ts=4 sw=4 sts=4 sr noet
 "
 
-echo "$blockssl" > "/etc/apache2/sites-available/$1-ssl.conf"
-ln -fs "/etc/apache2/sites-available/$1-ssl.conf" "/etc/apache2/sites-enabled/$1-ssl.conf"
+echo "$blockssl" > "/etc/apache2/sites-available/000-$1-ssl.conf"
+ln -fs "/etc/apache2/sites-available/000-$1-ssl.conf" "/etc/apache2/sites-enabled/000-$1-ssl.conf"
 
 a2dissite 000-default
 

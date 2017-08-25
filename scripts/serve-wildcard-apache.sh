@@ -9,6 +9,8 @@ if [ -n "$6" ]; then
     done
 fi
 
+phpnodot=${5/.}
+
 export DEBIAN_FRONTEND=noninteractive
 sudo service nginx stop
 apt-get update
@@ -56,10 +58,10 @@ block="<VirtualHost *:$3>
         Require all granted
     </Directory>
     <IfModule mod_fastcgi.c>
-            AddHandler php70-fcgi .php
-            Action php70-fcgi /php70-fcgi virtual
-            Alias /php70-fcgi /usr/lib/cgi-bin/php70-fcgi
-            FastCgiExternalServer /usr/lib/cgi-bin/php70-fcgi -socket /var/run/php/php7.0-fpm.sock -pass-header Authorization
+            AddHandler php$phpnodot-fcgi .php
+            Action php$phpnodot-fcgi /php$phpnodot-fcgi virtual
+            Alias /php$phpnodot-fcgi /usr/lib/cgi-bin/php$phpnodot-fcgi
+            FastCgiExternalServer /usr/lib/cgi-bin/php$phpnodot-fcgi -socket /var/run/php/php$5-fpm.sock -pass-header Authorization
     </IfModule>
 </VirtualHost>
 
@@ -163,9 +165,9 @@ blockssl="<IfModule mod_ssl.c>
             Require all granted
         </Directory>
         <IfModule mod_fastcgi.c>
-                AddHandler php70-fcgi .php
-                Action php70-fcgi /php70-fcgi virtual
-                Alias /php70-fcgi /usr/lib/cgi-bin/php70-fcgi
+                AddHandler php$phpnodot-fcgi .php
+                Action php$phpnodot-fcgi /php$phpnodot-fcgi virtual
+                Alias /php$phpnodot-fcgi /usr/lib/cgi-bin/php$phpnodot-fcgi
         </IfModule>
     </VirtualHost>
 </IfModule>

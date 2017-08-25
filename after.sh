@@ -6,6 +6,6 @@
 
 sudo a2enmod ssl
 sudo apt-get -y install libapache2-mod-fastcgi php-apcu
-sudo chown vagrant: /var/lib/apache2/fastcgi
 sudo a2enmod actions fastcgi vhost_alias
+sudo chown vagrant: /var/lib/apache2/fastcgi
 sudo service apache2 restart
