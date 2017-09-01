@@ -1,7 +1,8 @@
 ---
+name: "localbox"
 ip: "192.168.10.10"
 memory: 2048
-cpus: 1
+cpus: 4
 provider: virtualbox
 
 authorize: ~/.ssh/id_rsa.pub
@@ -10,15 +11,26 @@ keys:
     - ~/.ssh/id_rsa
 
 folders:
-    - map: ~/Code
-      to: /home/vagrant/Code
+    - map: __SITES_DIRECTORY__
+      to: /home/vagrant/Sites
+      type: "nfs"
 
 sites:
-    - map: homestead.app
-      to: /home/vagrant/Code/public
 
-databases:
-    - homestead
+# Default site settings
+    - map: "__BOX_URL__"
+      to: /home/vagrant/Sites
+      type: wildcard-apache
+      php: "7.1"
+
+# Specific site settings (to override PHP version)
+#    - map: "site.yourname.box"
+#      to: /home/vagrant/Sites/SITENAME/www
+#      type: apache
+#      php: "5.6"
+
+
+# databases:
 
 # blackfire:
 #     - id: foo
@@ -26,9 +38,8 @@ databases:
 #       client-id: foo
 #       client-token: bar
 
-# ports:
-#     - send: 50000
-#       to: 5000
-#     - send: 7777
-#       to: 777
-#       protocol: udp
+ports:
+    - send: 80
+      to: 80
+    - send: 443
+      to: 443
