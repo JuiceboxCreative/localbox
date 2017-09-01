@@ -40,8 +40,4 @@ sites:
 #       client-id: foo
 #       client-token: bar
 
-ports:
-    - send: 80
-      to: 80
-    - send: 443
-      to: 443
+# ports:
