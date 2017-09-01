@@ -19,8 +19,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "Laravel\\Homestead\\": "src/",
-            "Localbox\\Installers\\": "src/Installers"
+            "Laravel\\Homestead\\": "src/"
         }
     },
     "autoload-dev": {
@@ -35,9 +34,5 @@
     },
     "bin": [
         "bin/homestead"
-    ],
-    "scripts" : {
-        "post-install-cmd": "Localbox\\Installers\\Installer::postInstall",
-        "post-update-cmd": "Localbox\\Installers\\Installer::postInstall"
-    }
+    ]
 }
