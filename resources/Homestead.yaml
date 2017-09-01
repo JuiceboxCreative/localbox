@@ -11,6 +11,7 @@ keys:
     - ~/.ssh/id_rsa
 
 folders:
+    # e.g /home/bob/Sites
     - map: __SITES_DIRECTORY__
       to: /home/vagrant/Sites
       type: "nfs"
@@ -18,6 +19,7 @@ folders:
 sites:
 
 # Default site settings
+    # e.g "bob.box"
     - map: "__BOX_URL__"
       to: /home/vagrant/Sites
       type: wildcard-apache
