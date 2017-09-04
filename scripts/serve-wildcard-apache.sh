@@ -61,7 +61,7 @@ block="<VirtualHost *:$3>
             AddHandler php$phpnodot-fcgi .php
             Action php$phpnodot-fcgi /php$phpnodot-fcgi virtual
             Alias /php$phpnodot-fcgi /usr/lib/cgi-bin/php$phpnodot-fcgi
-            FastCgiExternalServer /usr/lib/cgi-bin/php$phpnodot-fcgi -socket /var/run/php/php$5-fpm.sock -pass-header Authorization
+            FastCgiExternalServer /usr/lib/cgi-bin/php$phpnodot-fcgi -socket /var/run/php/php$5-fpm.sock -idle-timeout 300 -pass-header Authorization
     </IfModule>
 </VirtualHost>
 
