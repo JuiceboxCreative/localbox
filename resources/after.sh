@@ -20,3 +20,13 @@ git config --global core.filemode false
 replace "plugins=(git)" "plugins=(composer laravel5 rsync vagrant yarn wp-cli)" -- ~/.zshrc
 replace '# DISABLE_UNTRACKED_FILES_DIRTY="true"' 'DISABLE_UNTRACKED_FILES_DIRTY="true"' -- ~/.zshrc
 echo "DEFAULT_USER=vagrant" >> ~/.zshrc
+cd ~/
+wget -q https://github.com/mailhog/mhsendmail/releases/download/v0.2.0/mhsendmail_linux_amd64
+sudo mv mhsendmail_linux_amd64 /usr/local/bin/mhsendmail
+sudo chmod +x /usr/local/bin/mhsendmail
+sudo replace ";sendmail_path =" "sendmail_path = /usr/local/bin/mhsendmail" -- /etc/php/7.1/fpm/php.ini
+sudo replace ";sendmail_path =" "sendmail_path = /usr/local/bin/mhsendmail" -- /etc/php/7.0/fpm/php.ini
+sudo replace ";sendmail_path =" "sendmail_path = /usr/local/bin/mhsendmail" -- /etc/php/5.6/fpm/php.ini
+sudo service php7.1-fpm restart
+sudo service php7.0-fpm restart
+sudo service php5.6-fpm restart

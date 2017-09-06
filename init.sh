@@ -10,4 +10,4 @@ cp -i resources/after.sh after.sh
 cp -i resources/aliases aliases
 
 echo "Localbox initialized!"
-echo "Please update the SITENAME and BOX_URL variables in Homestead.yaml"
+echo "Please update the __SITES_DIRECTORY__ and __BOX_URL__ variables in Homestead.yaml"
