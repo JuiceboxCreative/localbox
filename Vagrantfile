@@ -41,4 +41,37 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     if defined? VagrantPlugins::HostsUpdater
         config.hostsupdater.aliases = settings['sites'].map { |site| site['map'] }
     end
+
+    if defined? VagrantPlugins::Triggers
+        if OS.mac?
+          # port forwarding setup and removal for running on your host primary IP address
+          config.trigger.after [:up, :reload, :provision], :stdout => true do
+            system('echo "
+        rdr pass inet proto tcp from any to any port 80 -> 127.0.0.1 port 8000
+        rdr pass inet proto tcp from any to any port 443 -> 127.0.0.1 port 44300
+        " | sudo pfctl -ef - >/dev/null 2>&1; echo "Add Port Forwarding (80 => 8000)\nAdd Port Forwarding (443 => 44300)"')
+          end
+          config.trigger.after [:halt, :suspend, :destroy], :stdout => true do
+            system('sudo pfctl -F all -f /etc/pf.conf >/dev/null 2>&1; echo "Removing Port Forwarding (80 => 8000)\nRemove Port Forwarding (443 => 44300)"')
+          end
+       end
+    end
+end
+
+module OS
+    def OS.windows?
+        (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
+    end
+
+    def OS.mac?
+        (/darwin/ =~ RUBY_PLATFORM) != nil
+    end
+
+    def OS.unix?
+        !OS.windows?
+    end
+
+    def OS.linux?
+        OS.unix? and not OS.mac?
+    end
 end
