@@ -27,6 +27,7 @@ sudo chmod +x /usr/local/bin/mhsendmail
 sudo replace ";sendmail_path =" "sendmail_path = /usr/local/bin/mhsendmail" -- /etc/php/7.1/fpm/php.ini
 sudo replace ";sendmail_path =" "sendmail_path = /usr/local/bin/mhsendmail" -- /etc/php/7.0/fpm/php.ini
 sudo replace ";sendmail_path =" "sendmail_path = /usr/local/bin/mhsendmail" -- /etc/php/5.6/fpm/php.ini
+sudo phpdismod xdebug -s cli xdebug && sudo phpdismod xdebug
 sudo service php7.1-fpm restart
 sudo service php7.0-fpm restart
 sudo service php5.6-fpm restart
