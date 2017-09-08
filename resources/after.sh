@@ -34,6 +34,6 @@ sudo replace ";sendmail_path =" "sendmail_path = /usr/local/bin/mhsendmail" -- /
 sudo replace "short_open_tag = Off" "short_open_tag = On" -- /etc/php/5.6/fpm/php.ini
 sudo replace "max_execution_time = 30" "max_execution_time = 90" -- /etc/php/5.6/fpm/php.ini
 sudo phpdismod xdebug -s cli xdebug && sudo phpdismod xdebug
-service php7.1-fpm restart
-service php7.0-fpm restart
-service php5.6-fpm restart
+sudo service php7.1-fpm restart
+sudo service php7.0-fpm restart
+sudo service php5.6-fpm restart
