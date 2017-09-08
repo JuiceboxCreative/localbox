@@ -17,18 +17,20 @@ folders:
       to: /home/vagrant/Sites
       type: "nfs"
 
-sites:
-
 # Default site settings
-    # e.g "bob.box"
+sites:
     - map: "__BOX_URL__"
       to: /home/vagrant/Sites
       type: wildcard-apache
       php: "7.1"
-#    - map: "site.yourname.box"
-#      to: /home/vagrant/Sites/SITENAME/www
-#      type: apache
-#      php: "5.6"
+    - map: "php56.__BOX_URL__"
+      to: /home/vagrant/Sites
+      type: alt-php-wildcard-apache
+      php: "5.6"
+    - map: "php70.__BOX_URL__"
+      to: /home/vagrant/Sites
+      type: alt-php-wildcard-apache
+      php: "7.0"
 
 # databases:
 
