@@ -31,6 +31,18 @@ sites:
       to: /home/vagrant/Sites
       type: alt-php-wildcard-apache
       php: "7.0"
+    - map: "__NAME__.localhost"
+      to: /home/vagrant/Sites
+      type: wildcard-apache
+      php: "7.1"
+    - map: "php56.__NAME__.localhost"
+      to: /home/vagrant/Sites
+      type: alt-php-wildcard-apache
+      php: "5.6"
+    - map: "php70.__NAME__.localhost"
+      to: /home/vagrant/Sites
+      type: alt-php-wildcard-apache
+      php: "7.0"
 
 # databases:
 

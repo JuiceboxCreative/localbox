@@ -59,8 +59,6 @@ block="<VirtualHost *:$3>
     </Directory>
     <IfModule mod_fastcgi.c>
             AddHandler php$phpnodot-fcgi .php
-            Action php$phpnodot-fcgi /php$phpnodot-fcgi virtual
-            Alias /php$phpnodot-fcgi /usr/lib/cgi-bin/php$phpnodot-fcgi
     </IfModule>
 </VirtualHost>
 
@@ -165,9 +163,6 @@ blockssl="<IfModule mod_ssl.c>
         </Directory>
         <IfModule mod_fastcgi.c>
                 AddHandler php$phpnodot-fcgi .php
-                Action php$phpnodot-fcgi /php$phpnodot-fcgi virtual
-                Alias /php$phpnodot-fcgi /usr/lib/cgi-bin/php$phpnodot-fcgi
-                FastCgiExternalServer /usr/lib/cgi-bin/php$phpnodot-fcgi -socket /var/run/php/php$5-fpm.sock -idle-timeout 300 -pass-header Authorization
         </IfModule>
     </VirtualHost>
 </IfModule>
