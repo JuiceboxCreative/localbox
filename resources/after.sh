@@ -6,8 +6,27 @@
 
 sudo a2enmod ssl
 sudo apt-get -y install libapache2-mod-fastcgi php-apcu
-sudo a2enmod actions fastcgi vhost_alias
+sudo a2enmod actions fastcgi vhost_alias proxy proxy_http
 sudo chown vagrant: /var/lib/apache2/fastcgi
+if [ -e /etc/apache2/sites-enabled/phpconfig.conf ]
+then
+    echo "Skipping fastcgi config, already exists"
+else
+    sudo touch /etc/apache2/sites-enabled/phpconfig.conf
+    sudo chown vagrant: /etc/apache2/sites-enabled/phpconfig.conf
+    sudo echo "<IfModule mod_fastcgi.c>" >> /etc/apache2/sites-enabled/phpconfig.conf
+    sudo echo "FastCgiExternalServer /usr/lib/cgi-bin/php71-fcgi -socket /var/run/php/php7.1-fpm.sock -idle-timeout 300 -pass-header Authorization" >> /etc/apache2/sites-enabled/phpconfig.conf
+    sudo echo "Alias /php71-fcgi /usr/lib/cgi-bin/php71-fcgi" >> /etc/apache2/sites-enabled/phpconfig.conf
+    sudo echo "Action php71-fcgi /php71-fcgi virtual" >> /etc/apache2/sites-enabled/phpconfig.conf
+    sudo echo "FastCgiExternalServer /usr/lib/cgi-bin/php70-fcgi -socket /var/run/php/php7.0-fpm.sock -idle-timeout 300 -pass-header Authorization" >> /etc/apache2/sites-enabled/phpconfig.conf
+    sudo echo "Alias /php70-fcgi /usr/lib/cgi-bin/php70-fcgi" >> /etc/apache2/sites-enabled/phpconfig.conf
+    sudo echo "Action php70-fcgi /php70-fcgi virtual" >> /etc/apache2/sites-enabled/phpconfig.conf
+    sudo echo "FastCgiExternalServer /usr/lib/cgi-bin/php56-fcgi -socket /var/run/php/php5.6-fpm.sock -idle-timeout 300 -pass-header Authorization" >> /etc/apache2/sites-enabled/phpconfig.conf
+    sudo echo "Alias /php56-fcgi /usr/lib/cgi-bin/php56-fcgi" >> /etc/apache2/sites-enabled/phpconfig.conf
+    sudo echo "Action php56-fcgi /php56-fcgi virtual" >> /etc/apache2/sites-enabled/phpconfig.conf
+    sudo echo "</IfModule>" >> /etc/apache2/sites-enabled/phpconfig.conf
+fi
+
 sudo service apache2 restart
 sudo apt-get install cachefilesd
 sudo chown vagrant: /etc/default/cachefilesd
@@ -27,7 +46,7 @@ sudo replace "max_execution_time = 30" "max_execution_time = 90" -- /etc/php/7.0
 sudo replace ";sendmail_path =" "sendmail_path = /usr/local/bin/mhsendmail" -- /etc/php/5.6/fpm/php.ini
 sudo replace "short_open_tag = Off" "short_open_tag = On" -- /etc/php/5.6/fpm/php.ini
 sudo replace "max_execution_time = 30" "max_execution_time = 90" -- /etc/php/5.6/fpm/php.ini
-sudo phpdismod xdebug -s cli xdebug && sudo phpdismod xdebug
+sudo phpdismod xdebug && sudo phpdismod -s cli xdebug
 sudo service php7.1-fpm restart
 sudo service php7.0-fpm restart
 sudo service php5.6-fpm restart
