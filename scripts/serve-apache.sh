@@ -90,8 +90,8 @@ blockssl="<IfModule mod_ssl.c>
         # modules, e.g.
         #LogLevel info ssl:warn
 
-        ErrorLog ${APACHE_LOG_DIR}/error.log
-        CustomLog ${APACHE_LOG_DIR}/access.log combined
+        ErrorLog \${APACHE_LOG_DIR}/$1-error.log
+        CustomLog \${APACHE_LOG_DIR}/$1-access.log combined
 
         # For most configuration files from conf-available/, which are
         # enabled or disabled at a global level, it is possible to
@@ -183,6 +183,10 @@ ps auxw | grep apache2 | grep -v grep > /dev/null
 
 # Assume user wants mode_rewrite support
 sudo a2enmod rewrite
+
+# Turn on HTTPS support
+sudo a2enmod ssl
+
 service apache2 restart
 
 if [ $? == 0 ]

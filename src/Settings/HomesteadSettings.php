@@ -102,7 +102,7 @@ abstract class HomesteadSettings
     {
         $sites = [
             [
-                'map' => "{$projectName}.app",
+                'map' => "{$projectName}.test",
                 'to' => "/home/vagrant/{$projectDirectory}/public",
             ],
         ];

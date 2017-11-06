@@ -6,25 +6,26 @@ class Homestead
         # Configure Local Variable To Access Scripts From Remote Location
         scriptDir = File.dirname(__FILE__)
 
-        # Prevent TTY Errors
-        config.ssh.shell = "bash -c 'BASH_ENV=/etc/profile exec bash'"
-
         # Allow SSH Agent Forward from The Box
         config.ssh.forward_agent = true
 
         # Configure The Box
         config.vm.define settings["name"] ||= "homestead-7"
         config.vm.box = settings["box"] ||= "laravel/homestead"
-        config.vm.box_version = settings["version"] ||= ">= 3.0.0"
+        config.vm.box_version = settings["version"] ||= ">= 4.0.0"
         config.vm.hostname = settings["hostname"] ||= "homestead"
 
         # Configure A Private Network IP
-        config.vm.network :private_network, ip: settings["ip"] ||= "192.168.10.10"
+        if settings["ip"] != "autonetwork"
+            config.vm.network :private_network, ip: settings["ip"] ||= "192.168.10.10"
+        else
+            config.vm.network :private_network, :ip => "0.0.0.0", :auto_network => true
+        end
 
         # Configure Additional Networks
         if settings.has_key?("networks")
             settings["networks"].each do |network|
-                config.vm.network network["type"], ip: network["ip"], bridge: network["bridge"] ||= nil
+                config.vm.network network["type"], ip: network["ip"], bridge: network["bridge"] ||= nil, netmask: network["netmask"] ||= "255.255.255.0"
             end
         end
 
@@ -78,6 +79,7 @@ class Homestead
             80 => 8000,
             443 => 44300,
             3306 => 33060,
+            4040 => 4040,
             5432 => 54320,
             8025 => 8025,
             27017 => 27017
@@ -230,7 +232,7 @@ class Homestead
 
         config.vm.provision "shell" do |s|
             s.name = "Restarting Nginx"
-            s.inline = "sudo service nginx restart; sudo service php5.6-fpm restart; sudo service php7.0-fpm restart; sudo service php7.1-fpm restart"
+            s.inline = "sudo service nginx restart; sudo service php5.6-fpm restart; sudo service php7.0-fpm restart; sudo service php7.1-fpm restart; sudo service php7.2-fpm restart"
         end
 
         # Install MariaDB If Necessary
@@ -251,6 +253,13 @@ class Homestead
         if settings.has_key?("couchdb") && settings["couchdb"]
             config.vm.provision "shell" do |s|
                 s.path = scriptDir + "/install-couch.sh"
+            end
+        end
+
+        # Install Elasticsearch If Necessary
+        if settings.has_key?("elasticsearch") && settings["elasticsearch"]
+            config.vm.provision "shell" do |s|
+                s.path = scriptDir + "/install-elasticsearch.sh"
             end
         end
 
@@ -296,17 +305,22 @@ class Homestead
         if settings.has_key?("variables")
             settings["variables"].each do |var|
                 config.vm.provision "shell" do |s|
-                    s.inline = "echo \"\nenv[$1] = '$2'\" >> /etc/php/5.6/fpm/php-fpm.conf"
+                    s.inline = "echo \"\nenv[$1] = '$2'\" >> /etc/php/5.6/fpm/pool.d/www.conf"
                     s.args = [var["key"], var["value"]]
                 end
 
                 config.vm.provision "shell" do |s|
-                    s.inline = "echo \"\nenv[$1] = '$2'\" >> /etc/php/7.0/fpm/php-fpm.conf"
+                    s.inline = "echo \"\nenv[$1] = '$2'\" >> /etc/php/7.0/fpm/pool.d/www.conf"
                     s.args = [var["key"], var["value"]]
                 end
 
                 config.vm.provision "shell" do |s|
-                    s.inline = "echo \"\nenv[$1] = '$2'\" >> /etc/php/7.1/fpm/php-fpm.conf"
+                    s.inline = "echo \"\nenv[$1] = '$2'\" >> /etc/php/7.1/fpm/pool.d/www.conf"
+                    s.args = [var["key"], var["value"]]
+                end
+
+                config.vm.provision "shell" do |s|
+                    s.inline = "echo \"\nenv[$1] = '$2'\" >> /etc/php/7.2/fpm/pool.d/www.conf"
                     s.args = [var["key"], var["value"]]
                 end
 
@@ -317,7 +331,7 @@ class Homestead
             end
 
             config.vm.provision "shell" do |s|
-                s.inline = "service php5.6-fpm restart; service php7.0-fpm restart; service php7.1-fpm restart;"
+                s.inline = "service php5.6-fpm restart; service php7.0-fpm restart; service php7.1-fpm restart; service php7.2-fpm restart;"
             end
         end
 
@@ -339,6 +353,13 @@ class Homestead
                     settings["blackfire"][0]["client-token"]
                 ]
             end
+        end
+
+        # Add config file for ngrok
+        config.vm.provision "shell" do |s|
+            s.path = scriptDir + "/create-ngrok.sh"
+            s.args = [settings["ip"]]
+            s.privileged = false
         end
     end
 end
