@@ -17,6 +17,17 @@ folders:
       to: /home/vagrant/Sites
       type: "nfs"
 
+# WINDOWS USERS REPLACE THE ABOVE WITH THIS
+#folders:
+#  # e.g /home/bob/Sites
+#  - map: __SITES_DIRECTORY__
+#    to: /home/vagrant/Sites
+#    type: "smb"
+#    options:
+#       smb_username: WINDOWS_USERNAME
+#       smb_password: WINDOWS_PASSWORD
+
+
 # Default site settings
 sites:
     - map: "__BOX_URL__"

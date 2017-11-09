@@ -150,7 +150,7 @@ class Homestead
                     if (folder["type"] == "nfs")
                         mount_opts = folder["mount_options"] ? folder["mount_options"] : ['actimeo=2', 'nolock', 'rw', 'vers=3', 'tcp', 'fsc']
                     elsif (folder["type"] == "smb")
-                        mount_opts = folder["mount_options"] ? folder["mount_options"] : ['vers=3.02', 'mfsymlinks', 'dmode=775', 'fmode=664']
+                        mount_opts = folder["mount_options"] ? folder["mount_options"] : ['vers=3.02', 'mfsymlinks', 'dir_mode=0775', 'file_mode=0664']
                     end
 
                     # For b/w compatibility keep separate 'mount_opts', but merge with options

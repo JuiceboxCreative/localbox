@@ -59,6 +59,21 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             system('sudo pfctl -F all -f /etc/pf.conf >/dev/null 2>&1; echo "Removing Port Forwarding (80 => 8000)\nRemove Port Forwarding (443 => 44300)"')
           end
        end
+
+       if OS.windows?
+            config.trigger.after [:up, :reload, :provision], :stdout => true do
+                system('netsh interface portproxy add v4tov4 listenport=80 listenaddress=192.168.0.212 connectport=80 connectaddress=192.168.10.10')
+                system('netsh interface portproxy add v4tov4 listenport=80 listenaddress=0.0.0.0 connectport=80 connectaddress=192.168.10.10')
+                system('netsh interface portproxy add v4tov4 listenport=443 listenaddress=192.168.0.212 connectport=443 connectaddress=192.168.10.10')
+                system('netsh interface portproxy add v4tov4 listenport=443 listenaddress=0.0.0.0 connectport=443 connectaddress=192.168.10.10')
+            end
+            config.trigger.after [:halt, :suspend, :destroy], :stdout => true do
+                system('netsh interface portproxy delete v4tov4 listenport=80 listenaddress=192.168.0.212')
+                system('netsh interface portproxy delete v4tov4 listenport=80 listenaddress=0.0.0.0')
+                system('netsh interface portproxy delete v4tov4 listenport=443 listenaddress=192.168.0.212')
+                system('netsh interface portproxy delete v4tov4 listenport=443 listenaddress=0.0.0.0')
+            end
+       end
     end
 end
 
