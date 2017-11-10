@@ -42,6 +42,10 @@ sites:
       to: /home/vagrant/Sites
       type: alt-php-wildcard-apache
       php: "7.0"
+    - map: "php72.__BOX_URL__"
+      to: /home/vagrant/Sites
+      type: alt-php-wildcard-apache
+      php: "7.2"
     - map: "__NAME__.localhost"
       to: /home/vagrant/Sites
       type: wildcard-apache
@@ -54,6 +58,10 @@ sites:
       to: /home/vagrant/Sites
       type: alt-php-wildcard-apache
       php: "7.0"
+    - map: "php72.__NAME__.localhost"
+      to: /home/vagrant/Sites
+      type: alt-php-wildcard-apache
+      php: "7.2"
 
 # databases:
 

@@ -15,6 +15,9 @@ else
     sudo touch /etc/apache2/sites-enabled/phpconfig.conf
     sudo chown vagrant: /etc/apache2/sites-enabled/phpconfig.conf
     sudo echo "<IfModule mod_fastcgi.c>" >> /etc/apache2/sites-enabled/phpconfig.conf
+    sudo echo "FastCgiExternalServer /usr/lib/cgi-bin/php72-fcgi -socket /var/run/php/php7.2-fpm.sock -idle-timeout 300 -pass-header Authorization" >> /etc/apache2/sites-enabled/phpconfig.conf
+    sudo echo "Alias /php72-fcgi /usr/lib/cgi-bin/php72-fcgi" >> /etc/apache2/sites-enabled/phpconfig.conf
+    sudo echo "Action php72-fcgi /php72-fcgi virtual" >> /etc/apache2/sites-enabled/phpconfig.conf
     sudo echo "FastCgiExternalServer /usr/lib/cgi-bin/php71-fcgi -socket /var/run/php/php7.1-fpm.sock -idle-timeout 300 -pass-header Authorization" >> /etc/apache2/sites-enabled/phpconfig.conf
     sudo echo "Alias /php71-fcgi /usr/lib/cgi-bin/php71-fcgi" >> /etc/apache2/sites-enabled/phpconfig.conf
     sudo echo "Action php71-fcgi /php71-fcgi virtual" >> /etc/apache2/sites-enabled/phpconfig.conf
@@ -37,16 +40,24 @@ cd ~/
 wget -q https://github.com/mailhog/mhsendmail/releases/download/v0.2.0/mhsendmail_linux_amd64
 sudo mv mhsendmail_linux_amd64 /usr/local/bin/mhsendmail
 sudo chmod +x /usr/local/bin/mhsendmail
+sudo replace ";sendmail_path =" "sendmail_path = /usr/local/bin/mhsendmail" -- /etc/php/7.2/fpm/php.ini
+sudo replace "short_open_tag = Off" "short_open_tag = On" -- /etc/php/7.2/fpm/php.ini
+sudo replace "max_execution_time = 30" "max_execution_time = 90" -- /etc/php/7.2/fpm/php.ini
+sudo replace "cgi.fix_pathinfo=0" "cgi.fix_pathinfo=1" -- /etc/php/7.2/fpm/php.ini
 sudo replace ";sendmail_path =" "sendmail_path = /usr/local/bin/mhsendmail" -- /etc/php/7.1/fpm/php.ini
 sudo replace "short_open_tag = Off" "short_open_tag = On" -- /etc/php/7.1/fpm/php.ini
 sudo replace "max_execution_time = 30" "max_execution_time = 90" -- /etc/php/7.1/fpm/php.ini
+sudo replace "cgi.fix_pathinfo=0" "cgi.fix_pathinfo=1" -- /etc/php/7.1/fpm/php.ini
 sudo replace ";sendmail_path =" "sendmail_path = /usr/local/bin/mhsendmail" -- /etc/php/7.0/fpm/php.ini
 sudo replace "short_open_tag = Off" "short_open_tag = On" -- /etc/php/7.0/fpm/php.ini
 sudo replace "max_execution_time = 30" "max_execution_time = 90" -- /etc/php/7.0/fpm/php.ini
+sudo replace "cgi.fix_pathinfo=0" "cgi.fix_pathinfo=1" -- /etc/php/7.0/fpm/php.ini
 sudo replace ";sendmail_path =" "sendmail_path = /usr/local/bin/mhsendmail" -- /etc/php/5.6/fpm/php.ini
 sudo replace "short_open_tag = Off" "short_open_tag = On" -- /etc/php/5.6/fpm/php.ini
 sudo replace "max_execution_time = 30" "max_execution_time = 90" -- /etc/php/5.6/fpm/php.ini
+sudo replace "cgi.fix_pathinfo=0" "cgi.fix_pathinfo=1" -- /etc/php/5.6/fpm/php.ini
 sudo phpdismod xdebug && sudo phpdismod -s cli xdebug
+sudo service php7.2-fpm restart
 sudo service php7.1-fpm restart
 sudo service php7.0-fpm restart
 sudo service php5.6-fpm restart
