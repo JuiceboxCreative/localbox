@@ -5,7 +5,7 @@
 # be run after the Homestead machine is provisioned.
 
 sudo a2enmod ssl
-sudo apt-get -y install libapache2-mod-fastcgi php-apcu
+sudo apt-get -y install libapache2-mod-fastcgi php-apcu nfs-kernel-server
 sudo a2enmod actions fastcgi vhost_alias proxy proxy_http
 sudo chown vagrant: /var/lib/apache2/fastcgi
 if [ -e /etc/apache2/sites-enabled/phpconfig.conf ]
