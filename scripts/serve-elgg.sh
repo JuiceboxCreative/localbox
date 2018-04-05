@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 declare -A params=$6     # Create an associative array
 paramsTXT=""
 if [ -n "$6" ]; then
@@ -7,6 +8,15 @@ if [ -n "$6" ]; then
       paramsTXT="${paramsTXT}
       fastcgi_param ${element} ${params[$element]};"
    done
+fi
+
+if [ "$7" = "true" ] && [ "$5" = "7.2" ]
+then configureZray="
+location /ZendServer {
+        try_files \$uri \$uri/ /ZendServer/index.php?\$args;
+}
+"
+else configureZray=""
 fi
 
 block="server {
@@ -57,6 +67,8 @@ block="server {
         try_files \$uri \$uri/ @elgg;
     }
 
+    $configureZray
+    
     # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
     location ~ \.php$ {
         try_files \$uri @elgg;

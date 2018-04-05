@@ -12,7 +12,7 @@ class Homestead
         # Configure The Box
         config.vm.define settings["name"] ||= "homestead-7"
         config.vm.box = settings["box"] ||= "laravel/homestead"
-        config.vm.box_version = settings["version"] ||= ">= 4.0.0"
+        config.vm.box_version = settings["version"] ||= ">= 5.2.0"
         config.vm.hostname = settings["hostname"] ||= "homestead"
 
         # Configure A Private Network IP
@@ -40,6 +40,11 @@ class Homestead
             if settings.has_key?("gui") && settings["gui"]
                 vb.gui = true
             end
+        end
+
+        # Override Default SSH port on the host
+        if (settings.has_key?("default_ssh_port"))
+            config.vm.network :forwarded_port, guest: 22, host: settings["default_ssh_port"], auto_correct: false, id: "ssh"
         end
 
         # Configure A Few VMware Settings
@@ -162,13 +167,10 @@ class Homestead
                     config.vm.synced_folder folder["map"], folder["to"], type: folder["type"] ||= nil, **options
 
                     # Bindfs support to fix shared folder (NFS) permission issue on Mac
-                    if Vagrant.has_plugin?("vagrant-bindfs")
-                        config.bindfs.bind_folder folder["to"], folder["to"]
-                        config.bindfs.default_options = {
-                          force_user:   'vagrant',
-                          force_group:  'vagrant',
-                          perms:        'u=rwX:g=rwD:o=rD'
-                        }
+                    if (folder["type"] == "nfs")
+                        if Vagrant.has_plugin?("vagrant-bindfs")
+                            config.bindfs.bind_folder folder["to"], folder["to"]
+                        end
                     end
                 else
                     config.vm.provision "shell" do |s|
@@ -181,6 +183,14 @@ class Homestead
         # Install All The Configured Nginx Sites
         config.vm.provision "shell" do |s|
             s.path = scriptDir + "/clear-nginx.sh"
+        end
+
+        # Temporary fix to disable Z-Ray by default to be fixed in future base box update
+        config.vm.provision "shell" do |s|
+            s.inline = "rm -rf /usr/lib/php/20170718/zray.so"
+        end
+        config.vm.provision "shell" do |s|
+            s.inline = "rm -rf /etc/php/7.2/fpm/conf.d/zray.ini"
         end
 
         if settings.include? 'sites'
@@ -209,7 +219,23 @@ class Homestead
                         params += " )"
                     end
                     s.path = scriptDir + "/serve-#{type}.sh"
-                    s.args = [site["map"], site["to"], site["port"] ||= "80", site["ssl"] ||= "443", site["php"] ||= "7.1", params ||= ""]
+                    s.args = [site["map"], site["to"], site["port"] ||= "80", site["ssl"] ||= "443", site["php"] ||= "7.2", params ||= "", site["zray"] ||= "false"]
+
+                    if site["zray"] == 'true'
+                        config.vm.provision "shell" do |s|
+                            s.inline = "ln -sf /opt/zray/gui/public " + site["to"] + "/ZendServer"
+                        end
+                        config.vm.provision "shell" do |s|
+                            s.inline = "ln -sf /opt/zray/lib/zray.so /usr/lib/php/20170718/zray.so"
+                        end
+                        config.vm.provision "shell" do |s|
+                            s.inline = "ln -sf /opt/zray/zray.ini /etc/php/7.2/fpm/conf.d/zray.ini"
+                        end
+                    else
+                        config.vm.provision "shell" do |s|
+                            s.inline = "rm -rf " + site["to"] + "/ZendServer"
+                        end
+                    end
                 end
 
                 # Configure The Cron Schedule
@@ -230,72 +256,6 @@ class Homestead
                         s.name = "Checking for old Schedule"
                         s.inline = "rm -f /etc/cron.d/$1"
                         s.args = [site["map"].tr('^A-Za-z0-9', '')]
-                    end
-                end
-            end
-        end
-
-        config.vm.provision "shell" do |s|
-            s.name = "Restarting Nginx"
-            s.inline = "sudo service nginx restart; sudo service php5.6-fpm restart; sudo service php7.0-fpm restart; sudo service php7.1-fpm restart; sudo service php7.2-fpm restart"
-        end
-
-        # Install MariaDB If Necessary
-        if settings.has_key?("mariadb") && settings["mariadb"]
-            config.vm.provision "shell" do |s|
-                s.path = scriptDir + "/install-maria.sh"
-            end
-        end
-
-        # Install MongoDB If Necessary
-        if settings.has_key?("mongodb") && settings["mongodb"]
-            config.vm.provision "shell" do |s|
-                s.path = scriptDir + "/install-mongo.sh"
-            end
-        end
-
-        # Install CouchDB If Necessary
-        if settings.has_key?("couchdb") && settings["couchdb"]
-            config.vm.provision "shell" do |s|
-                s.path = scriptDir + "/install-couch.sh"
-            end
-        end
-
-        # Install Elasticsearch If Necessary
-        if settings.has_key?("elasticsearch") && settings["elasticsearch"]
-            config.vm.provision "shell" do |s|
-                s.path = scriptDir + "/install-elasticsearch.sh"
-            end
-        end
-
-        # Configure All Of The Configured Databases
-        if settings.has_key?("databases")
-            settings["databases"].each do |db|
-                config.vm.provision "shell" do |s|
-                    s.name = "Creating MySQL Database: " + db
-                    s.path = scriptDir + "/create-mysql.sh"
-                    s.args = [db]
-                end
-
-                config.vm.provision "shell" do |s|
-                    s.name = "Creating Postgres Database: " + db
-                    s.path = scriptDir + "/create-postgres.sh"
-                    s.args = [db]
-                end
-
-                if settings.has_key?("mongodb") && settings["mongodb"]
-                    config.vm.provision "shell" do |s|
-                        s.name = "Creating Mongo Database: " + db
-                        s.path = scriptDir + "/create-mongo.sh"
-                        s.args = [db]
-                    end
-                end
-
-                if settings.has_key?("couchdb") && settings["couchdb"]
-                    config.vm.provision "shell" do |s|
-                        s.name = "Creating Couch Database: " + db
-                        s.path = scriptDir + "/create-couch.sh"
-                        s.args = [db]
                     end
                 end
             end
@@ -340,10 +300,83 @@ class Homestead
             end
         end
 
+        config.vm.provision "shell" do |s|
+            s.name = "Restarting Cron"
+            s.inline = "sudo service cron restart"
+        end
+
+        config.vm.provision "shell" do |s|
+            s.name = "Restarting Nginx"
+            s.inline = "sudo service nginx restart; sudo service php5.6-fpm restart; sudo service php7.0-fpm restart; sudo service php7.1-fpm restart; sudo service php7.2-fpm restart"
+        end
+
+        # Install MariaDB If Necessary
+        if settings.has_key?("mariadb") && settings["mariadb"]
+            config.vm.provision "shell" do |s|
+                s.path = scriptDir + "/install-maria.sh"
+            end
+        end
+
+        # Install MongoDB If Necessary
+        if settings.has_key?("mongodb") && settings["mongodb"]
+            config.vm.provision "shell" do |s|
+                s.path = scriptDir + "/install-mongo.sh"
+            end
+        end
+
+        # Install CouchDB If Necessary
+        if settings.has_key?("couchdb") && settings["couchdb"]
+            config.vm.provision "shell" do |s|
+                s.path = scriptDir + "/install-couch.sh"
+            end
+        end
+
+        # Install Elasticsearch If Necessary
+        if settings.has_key?("elasticsearch") && settings["elasticsearch"]
+            config.vm.provision "shell" do |s|
+                s.name = "Installing Elasticsearch"
+                s.path = scriptDir + "/install-elasticsearch.sh"
+                s.args = settings["elasticsearch"]
+            end
+        end
+
+        # Configure All Of The Configured Databases
+        if settings.has_key?("databases")
+            settings["databases"].each do |db|
+                config.vm.provision "shell" do |s|
+                    s.name = "Creating MySQL Database: " + db
+                    s.path = scriptDir + "/create-mysql.sh"
+                    s.args = [db]
+                end
+
+                config.vm.provision "shell" do |s|
+                    s.name = "Creating Postgres Database: " + db
+                    s.path = scriptDir + "/create-postgres.sh"
+                    s.args = [db]
+                end
+
+                if settings.has_key?("mongodb") && settings["mongodb"]
+                    config.vm.provision "shell" do |s|
+                        s.name = "Creating Mongo Database: " + db
+                        s.path = scriptDir + "/create-mongo.sh"
+                        s.args = [db]
+                    end
+                end
+
+                if settings.has_key?("couchdb") && settings["couchdb"]
+                    config.vm.provision "shell" do |s|
+                        s.name = "Creating Couch Database: " + db
+                        s.path = scriptDir + "/create-couch.sh"
+                        s.args = [db]
+                    end
+                end
+            end
+        end
+
         # Update Composer On Every Provision
         config.vm.provision "shell" do |s|
             s.name = "Update Composer"
-            s.inline = "sudo /usr/local/bin/composer self-update && sudo chown -R vagrant:vagrant /home/vagrant/.composer/"
+            s.inline = "sudo /usr/local/bin/composer self-update --no-progress && sudo chown -R vagrant:vagrant /home/vagrant/.composer/"
             s.privileged = false
         end
 
