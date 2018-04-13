@@ -40,6 +40,12 @@ class Homestead
             if settings.has_key?("gui") && settings["gui"]
                 vb.gui = true
             end
+
+            vb.customize [
+                "storagectl", :id,
+                "--name", "SATA Controller",
+                "--hostiocache", "on"
+            ]
         end
 
         # Override Default SSH port on the host
