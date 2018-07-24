@@ -4,6 +4,7 @@
 require 'json'
 require 'yaml'
 
+VAGRANT_USE_VAGRANT_TRIGGERS ||= 1
 VAGRANTFILE_API_VERSION ||= "2"
 confDir = $confDir ||= File.expand_path(File.dirname(__FILE__))
 

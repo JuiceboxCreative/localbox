@@ -4,9 +4,7 @@
 # add any commands you wish to this file and they will
 # be run after the Homestead machine is provisioned.
 
-sudo a2enmod ssl
-sudo apt-get -y install libapache2-mod-fastcgi php-apcu nfs-kernel-server
-sudo a2enmod actions fastcgi vhost_alias proxy proxy_http
+sudo apt-get -y install nfs-kernel-server
 sudo chown vagrant: /var/lib/apache2/fastcgi
 if [ -e /etc/apache2/sites-enabled/phpconfig.conf ]
 then
@@ -15,17 +13,17 @@ else
     sudo touch /etc/apache2/sites-enabled/phpconfig.conf
     sudo chown vagrant: /etc/apache2/sites-enabled/phpconfig.conf
     sudo echo "<IfModule mod_fastcgi.c>" >> /etc/apache2/sites-enabled/phpconfig.conf
-    sudo echo "FastCgiExternalServer /usr/lib/cgi-bin/php72-fcgi -socket /var/run/php/php7.2-fpm.sock -idle-timeout 300 -pass-header Authorization" >> /etc/apache2/sites-enabled/phpconfig.conf
-    sudo echo "Alias /php72-fcgi /usr/lib/cgi-bin/php72-fcgi" >> /etc/apache2/sites-enabled/phpconfig.conf
+    sudo echo "FastCgiExternalServer /usr/lib/cgi-bin/php7.2 -socket /var/run/php/php7.2-fpm.sock -idle-timeout 300 -pass-header Authorization" >> /etc/apache2/sites-enabled/phpconfig.conf
+    sudo echo "Alias /php72-fcgi /usr/lib/cgi-bin/php7.2" >> /etc/apache2/sites-enabled/phpconfig.conf
     sudo echo "Action php72-fcgi /php72-fcgi virtual" >> /etc/apache2/sites-enabled/phpconfig.conf
-    sudo echo "FastCgiExternalServer /usr/lib/cgi-bin/php71-fcgi -socket /var/run/php/php7.1-fpm.sock -idle-timeout 300 -pass-header Authorization" >> /etc/apache2/sites-enabled/phpconfig.conf
+    sudo echo "FastCgiExternalServer /usr/lib/cgi-bin/php7.1 -socket /var/run/php/php7.1-fpm.sock -idle-timeout 300 -pass-header Authorization" >> /etc/apache2/sites-enabled/phpconfig.conf
     sudo echo "Alias /php71-fcgi /usr/lib/cgi-bin/php71-fcgi" >> /etc/apache2/sites-enabled/phpconfig.conf
     sudo echo "Action php71-fcgi /php71-fcgi virtual" >> /etc/apache2/sites-enabled/phpconfig.conf
-    sudo echo "FastCgiExternalServer /usr/lib/cgi-bin/php70-fcgi -socket /var/run/php/php7.0-fpm.sock -idle-timeout 300 -pass-header Authorization" >> /etc/apache2/sites-enabled/phpconfig.conf
-    sudo echo "Alias /php70-fcgi /usr/lib/cgi-bin/php70-fcgi" >> /etc/apache2/sites-enabled/phpconfig.conf
+    sudo echo "FastCgiExternalServer /usr/lib/cgi-bin/php7.0 -socket /var/run/php/php7.0-fpm.sock -idle-timeout 300 -pass-header Authorization" >> /etc/apache2/sites-enabled/phpconfig.conf
+    sudo echo "Alias /php70-fcgi /usr/lib/cgi-bin/php7.0" >> /etc/apache2/sites-enabled/phpconfig.conf
     sudo echo "Action php70-fcgi /php70-fcgi virtual" >> /etc/apache2/sites-enabled/phpconfig.conf
-    sudo echo "FastCgiExternalServer /usr/lib/cgi-bin/php56-fcgi -socket /var/run/php/php5.6-fpm.sock -idle-timeout 300 -pass-header Authorization" >> /etc/apache2/sites-enabled/phpconfig.conf
-    sudo echo "Alias /php56-fcgi /usr/lib/cgi-bin/php56-fcgi" >> /etc/apache2/sites-enabled/phpconfig.conf
+    sudo echo "FastCgiExternalServer /usr/lib/cgi-bin/php5.6 -socket /var/run/php/php5.6-fpm.sock -idle-timeout 300 -pass-header Authorization" >> /etc/apache2/sites-enabled/phpconfig.conf
+    sudo echo "Alias /php56-fcgi /usr/lib/cgi-bin/php5.6" >> /etc/apache2/sites-enabled/phpconfig.conf
     sudo echo "Action php56-fcgi /php56-fcgi virtual" >> /etc/apache2/sites-enabled/phpconfig.conf
     sudo echo "</IfModule>" >> /etc/apache2/sites-enabled/phpconfig.conf
 fi
