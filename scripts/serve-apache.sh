@@ -52,12 +52,6 @@ block="<VirtualHost *:$3>
     <Directory /usr/lib/cgi-bin>
         Require all granted
     </Directory>
-    <IfModule mod_fastcgi.c>
-            AddHandler php$phpnodot-fcgi .php
-            Action php$phpnodot-fcgi /php$phpnodot-fcgi virtual
-            Alias /php$phpnodot-fcgi /usr/lib/cgi-bin/php$phpnodot-fcgi
-            FastCgiExternalServer /usr/lib/cgi-bin/php$phpnodot-fcgi -socket /var/run/php/php$5-fpm.sock -pass-header Authorization
-    </IfModule>
 </VirtualHost>
 
 # vim: syntax=apache ts=4 sw=4 sts=4 sr noet
@@ -129,6 +123,13 @@ blockssl="<IfModule mod_ssl.c>
                 AddHandler php$phpnodot-fcgi .php
                 Action php$phpnodot-fcgi /php$phpnodot-fcgi virtual
                 Alias /php$phpnodot-fcgi /usr/lib/cgi-bin/php$phpnodot-fcgi
+        </IfModule>
+        <IfModule !mod_fastcgi.c>
+            <IfModule mod_proxy_fcgi.c>
+                <FilesMatch \".+\.ph(ar|p|tml)$\">
+                    SetHandler \"proxy:unix:/var/run/php/php"$5"-fpm.sock|fcgi://localhost/\"
+                </FilesMatch>
+            </IfModule>
         </IfModule>
     </VirtualHost>
 </IfModule>

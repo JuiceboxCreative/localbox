@@ -60,6 +60,13 @@ block="<VirtualHost *:$3>
     <IfModule mod_fastcgi.c>
             AddHandler php$phpnodot-fcgi .php
     </IfModule>
+    <IfModule !mod_fastcgi.c>
+        <IfModule mod_proxy_fcgi.c>
+            <FilesMatch \".+\.ph(ar|p|tml)$\">
+                SetHandler \"proxy:unix:/var/run/php/php"$5"-fpm.sock|fcgi://localhost/\"
+            </FilesMatch>
+        </IfModule>
+    </IfModule>
 </VirtualHost>
 
 # vim: syntax=apache ts=4 sw=4 sts=4 sr noet
@@ -163,6 +170,13 @@ blockssl="<IfModule mod_ssl.c>
         </Directory>
         <IfModule mod_fastcgi.c>
                 AddHandler php$phpnodot-fcgi .php
+        </IfModule>
+        <IfModule !mod_fastcgi.c>
+            <IfModule mod_proxy_fcgi.c>
+                <FilesMatch \".+\.ph(ar|p|tml)$\">
+                    SetHandler \"proxy:unix:/var/run/php/php"$5"-fpm.sock|fcgi://localhost/\"
+                </FilesMatch>
+            </IfModule>
         </IfModule>
     </VirtualHost>
 </IfModule>

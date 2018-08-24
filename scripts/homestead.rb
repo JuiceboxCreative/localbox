@@ -175,10 +175,10 @@ class Homestead
             folder['type'] = 'smb'
           end
 
-          if folder['type'] == 'nfs'
-            mount_opts = folder['mount_options'] ? folder['mount_options'] : ['actimeo=1', 'nolock']
-          elsif folder['type'] == 'smb'
-            mount_opts = folder['mount_options'] ? folder['mount_options'] : ['vers=3.02', 'mfsymlinks']
+          if (folder["type"] == "nfs")
+            mount_opts = folder["mount_options"] ? folder["mount_options"] : ['nolock,vers=3,udp,noatime,actimeo=1']
+          elsif (folder["type"] == "smb")
+              mount_opts = folder["mount_options"] ? folder["mount_options"] : ['vers=3.02', 'mfsymlinks', 'dir_mode=0775', 'file_mode=0664']
           end
 
           # For b/w compatibility keep separate 'mount_opts', but merge with options
@@ -246,48 +246,12 @@ class Homestead
             config.vm.provision 'shell' do |s|
               s.inline = 'ln -sf /opt/zray/lib/zray.so /usr/lib/php/20170718/zray.so'
             end
-<<<<<<< HEAD
-        end
-
-        # Register All Of The Configured Shared Folders
-        if settings.include? 'folders'
-            settings["folders"].each do |folder|
-                if File.exists? File.expand_path(folder["map"])
-                    mount_opts = []
-
-                    if (folder["type"] == "nfs")
-                        mount_opts = folder["mount_options"] ? folder["mount_options"] : ['nolock,vers=3,udp,noatime,actimeo=1']
-                    elsif (folder["type"] == "smb")
-                        mount_opts = folder["mount_options"] ? folder["mount_options"] : ['vers=3.02', 'mfsymlinks', 'dir_mode=0775', 'file_mode=0664']
-                    end
-
-                    # For b/w compatibility keep separate 'mount_opts', but merge with options
-                    options = (folder["options"] || {}).merge({ mount_options: mount_opts })
-
-                    # Double-splat (**) operator only works with symbol keys, so convert
-                    options.keys.each{|k| options[k.to_sym] = options.delete(k) }
-
-                    config.vm.synced_folder folder["map"], folder["to"], type: folder["type"] ||= nil, **options
-
-                    # Bindfs support to fix shared folder (NFS) permission issue on Mac
-                    if (folder["type"] == "nfs")
-                        if Vagrant.has_plugin?("vagrant-bindfs")
-                            config.bindfs.bind_folder folder["to"], folder["to"]
-                        end
-                    end
-                else
-                    config.vm.provision "shell" do |s|
-                        s.inline = ">&2 echo \"Unable to mount one of your folders. Please check your folders in Homestead.yaml\""
-                    end
-                end
-=======
             config.vm.provision 'shell' do |s|
               s.inline = 'ln -sf /opt/zray/zray.ini /etc/php/7.2/fpm/conf.d/zray.ini'
             end
           else
             config.vm.provision 'shell' do |s|
               s.inline = 'rm -rf ' + site['to'] + '/ZendServer'
->>>>>>> upstream/master
             end
           end
         end
