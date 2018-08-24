@@ -65,10 +65,4 @@ sites:
 
 # databases:
 
-# blackfire:
-#     - id: foo
-#       token: bar
-#       client-id: foo
-#       client-token: bar
-
 # ports:

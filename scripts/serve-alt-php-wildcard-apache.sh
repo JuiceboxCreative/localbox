@@ -14,7 +14,7 @@ phpnodot=${5/.}
 export DEBIAN_FRONTEND=noninteractive
 sudo service nginx stop
 apt-get update
-apt-get install -y apache2
+apt-get install -y apache2 php"$5"-cgi libapache2-mod-fcgid
 sed -i "s/www-data/vagrant/" /etc/apache2/envvars
 
 block="<VirtualHost *:$3>

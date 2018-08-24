@@ -6,28 +6,6 @@
 
 sudo apt-get -y install nfs-kernel-server
 sudo chown vagrant: /var/lib/apache2/fastcgi
-if [ -e /etc/apache2/sites-enabled/phpconfig.conf ]
-then
-    echo "Skipping fastcgi config, already exists"
-else
-    sudo touch /etc/apache2/sites-enabled/phpconfig.conf
-    sudo chown vagrant: /etc/apache2/sites-enabled/phpconfig.conf
-    sudo echo "<IfModule mod_fastcgi.c>" >> /etc/apache2/sites-enabled/phpconfig.conf
-    sudo echo "FastCgiExternalServer /usr/lib/cgi-bin/php7.2 -socket /var/run/php/php7.2-fpm.sock -idle-timeout 300 -pass-header Authorization" >> /etc/apache2/sites-enabled/phpconfig.conf
-    sudo echo "Alias /php72-fcgi /usr/lib/cgi-bin/php7.2" >> /etc/apache2/sites-enabled/phpconfig.conf
-    sudo echo "Action php72-fcgi /php72-fcgi virtual" >> /etc/apache2/sites-enabled/phpconfig.conf
-    sudo echo "FastCgiExternalServer /usr/lib/cgi-bin/php7.1 -socket /var/run/php/php7.1-fpm.sock -idle-timeout 300 -pass-header Authorization" >> /etc/apache2/sites-enabled/phpconfig.conf
-    sudo echo "Alias /php71-fcgi /usr/lib/cgi-bin/php71-fcgi" >> /etc/apache2/sites-enabled/phpconfig.conf
-    sudo echo "Action php71-fcgi /php71-fcgi virtual" >> /etc/apache2/sites-enabled/phpconfig.conf
-    sudo echo "FastCgiExternalServer /usr/lib/cgi-bin/php7.0 -socket /var/run/php/php7.0-fpm.sock -idle-timeout 300 -pass-header Authorization" >> /etc/apache2/sites-enabled/phpconfig.conf
-    sudo echo "Alias /php70-fcgi /usr/lib/cgi-bin/php7.0" >> /etc/apache2/sites-enabled/phpconfig.conf
-    sudo echo "Action php70-fcgi /php70-fcgi virtual" >> /etc/apache2/sites-enabled/phpconfig.conf
-    sudo echo "FastCgiExternalServer /usr/lib/cgi-bin/php5.6 -socket /var/run/php/php5.6-fpm.sock -idle-timeout 300 -pass-header Authorization" >> /etc/apache2/sites-enabled/phpconfig.conf
-    sudo echo "Alias /php56-fcgi /usr/lib/cgi-bin/php5.6" >> /etc/apache2/sites-enabled/phpconfig.conf
-    sudo echo "Action php56-fcgi /php56-fcgi virtual" >> /etc/apache2/sites-enabled/phpconfig.conf
-    sudo echo "</IfModule>" >> /etc/apache2/sites-enabled/phpconfig.conf
-fi
-
 sudo service apache2 restart
 sudo apt-get install cachefilesd
 sudo chown vagrant: /etc/default/cachefilesd
