@@ -72,7 +72,7 @@ class Homestead
       h.vmname = settings['names'] ||= 'homestead-7'
       h.cpus = settings['cpus'] ||= 1
       h.memory = settings['memory'] ||= 2048
-      h.differencing_disk = true
+      h.linked_clone = true
 
       if Vagrant.has_plugin?('vagrant-hostmanager')
         override.hostmanager.ignore_private_ip = true
@@ -217,6 +217,15 @@ class Homestead
         end
 
         type = site['type'] ||= 'laravel'
+        load_balancer = settings['load_balancer'] ||= false
+        http_port = load_balancer ? '8111' : '80'
+        https_port = load_balancer ? '8112' : '443'
+
+        if load_balancer
+            config.vm.provision 'shell' do |s|
+                s.path = script_dir + '/install-load-balancer.sh'
+            end
+        end
 
         case type
         when 'apigility'
@@ -236,8 +245,15 @@ class Homestead
             end
             params += ' )'
           end
+          if site.include? 'headers'
+            headers = '('
+            site['headers'].each do |header|
+                headers += ' [' + header['key'] + ']=' + header['value']
+            end
+            headers += ' )'
+          end
           s.path = script_dir + "/serve-#{type}.sh"
-          s.args = [site['map'], site['to'], site['port'] ||= '80', site['ssl'] ||= '443', site['php'] ||= '7.2', params ||= '', site['zray'] ||= 'false']
+          s.args = [site['map'], site['to'], site['port'] ||= http_port, site['ssl'] ||= https_port, site['php'] ||= '7.2', params ||= '', site['zray'] ||= 'false', site['exec'] ||= 'false', headers ||= '']
 
           if site['zray'] == 'true'
             config.vm.provision 'shell' do |s|
@@ -427,6 +443,17 @@ class Homestead
       end
     end
 
+    # Create Minio Buckets
+    if settings.has_key?('buckets') && settings['minio']
+        settings['buckets'].each do |bucket|
+            config.vm.provision 'shell' do |s|
+                s.name = 'Creating Minio Bucket: ' + bucket['name']
+                s.path = script_dir + '/create-minio-bucket.sh'
+                s.args = [bucket['name'], bucket['policy'] || 'none']
+            end
+        end
+    end
+
     # Install grafana if Necessary
     if settings.has_key?('influxdb') && settings['influxdb']
       config.vm.provision 'shell' do |s|
@@ -468,7 +495,7 @@ class Homestead
       s.privileged = false
     end
 
-    if settings.has_key?('backup') && settings['backup'] && (Vagrant::VERSION >= '2.1.0' || Vagrant.has_plugin('vagrant-triggers'))
+    if settings.has_key?('backup') && settings['backup'] && (Vagrant::VERSION >= '2.1.0' || Vagrant.has_plugin?('vagrant-triggers'))
       dir_prefix = '/vagrant/'
       settings['databases'].each do |database|
         Homestead.backup_mysql(database, "#{dir_prefix}/mysql_backup", config)
@@ -491,7 +518,7 @@ class Homestead
     now = Time.now.strftime("%Y%m%d%H%M")
     config.trigger.before :destroy do |trigger|
       trigger.warn = "Backing up mysql database #{database}..."
-      trigger.run_remote = { inline: "mkdir -p #{dir} && mysqldump #{database} > #{dir}/#{database}-#{now}.sql" }
+      trigger.run_remote = { inline: "mkdir -p #{dir} && mysqldump --routines #{database} > #{dir}/#{database}-#{now}.sql" }
     end
   end
 
